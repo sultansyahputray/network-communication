@@ -51,20 +51,39 @@ int main()
 
     cout << "Connection to the server port number: " << port_number << endl;
     
-    cout << "Awaiting data from the server..." << endl;
+    cout << "Awaiting confirmation from the server..." << endl;
+    ssize_t bytesReceived = recv(client, buffer, buf_size - 1, 0);
+    if (bytesReceived <= 0)
+    {
+        cerr << "Error receiving confirmation from the server." << endl;
+        close(client);
+        exit(1);
+    }
+    buffer[bytesReceived] = '\0'; 
+    cout << "Connection confirmed, you are good to go..." << endl;
+
+    cout << "\n\nEnter # to end the connection" << endl;
 
     while (true) {
-        /* Receiving data from server */
-        memset(buffer, 0, buf_size);
-        ssize_t bytesReceived = recv(client, buffer, buf_size - 1, 0);
+        /* Sending data to server */
+        cout << "Client: ";
+        cin.getline(buffer, buf_size);
+        send(client, buffer, buf_size, 0);
+        if (strcmp(buffer, "#") == 0) {
+            cout << "\nConnection terminated.\nGoodbye..." << endl;
+            break;
+        }
 
+        /* Receiving data from server */
+        cout << "Server: ";
+        bytesReceived = recv(client, buffer, buf_size - 1, 0);
         if (bytesReceived <= 0) {
             cerr << "Error receiving data from the server." << endl;
             close(client);
             exit(1);
         }
         buffer[bytesReceived] = '\0'; 
-        cout << "Server: " << buffer << endl;   
+        cout << buffer << endl;   
     }
 
     /* ---------------- CLOSE CALL ------------- */

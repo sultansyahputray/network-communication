@@ -65,22 +65,10 @@ int main() {
 
     while (true) 
     {
-        /* Receiving data from client */
-        memset(buffer, 0, buf_size);
-        int bytesReceived = recv(client, buffer, buf_size, 0);
-
-        if (bytesReceived <= 0)
-        {
-            cerr << "Connection closed or error receiving data from client." << endl;
-            break;
-        }
-
-        cout << "Client: " << buffer << endl;
-
         /* Sending data to client */
         cout << "Server: ";
         cin.getline(buffer, buf_size);
-        send(client, buffer, buf_size, 0);
+        send(client, buffer, strlen(buffer), 0);
 
         if (strcmp(buffer, "#") == 0) 
         {
