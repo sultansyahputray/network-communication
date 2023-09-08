@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <thread>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ int main() {
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_size = sizeof(client_addr);
 
-    // ESTABLISHING SOCKET CONNECTION
+    //ESTABLISHING SOCKET CONNECTION 
 
     server = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -34,7 +35,7 @@ int main() {
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     server_addr.sin_port = htons(port_number);
 
-    // BINDING THE SOCKET
+    // BINDING THE SOCKET 
 
     if (bind(server, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) 
     {
@@ -42,12 +43,12 @@ int main() {
         exit(1);
     }
 
-    // LISTENING CALL
+    // LISTENING CALL 
 
     listen(server, 1);
     cout << "Listening for clients..." << endl;
 
-    // ACCEPTING CLIENTS
+    // ACCEPTING CLIENTS  
 
     int clientCount = 1;
     int client = accept(server, (struct sockaddr*)&client_addr, &client_size);
@@ -65,28 +66,38 @@ int main() {
 
     while (true) 
     {
-        cout << "Client : ";
-        int bytesReceived = recv(client, buffer, buf_size - 1, 0);
-        if (bytesReceived <= 0) {
-            cerr << "Error receiving message" << endl;
-            close(client);
-            exit(1);
-        }
-    
-        buffer[bytesReceived] = '\0';
-        cout << buffer << endl;
-    
-        // SENDING DATA TO CLIENT
-        cout << "Server : ";
-        cin.getline(buffer, buf_size);
-        send(client, buffer, strlen(buffer), 0);
-        if (strcmp(buffer, "#") == 0) {
-            cout << "\nConnection terminated" << endl;
+        // RECEIVING DATA FROM CLIENT
+        memset(buffer, 0, buf_size);
+        int bytesReceived = recv(client, buffer, buf_size, 0);
+
+        if (bytesReceived <= 0)
+        {
+            cerr << "Connection closed or error receiving data from client." << endl;
             break;
         }
+
+        cout << "Client: " << buffer << endl;
+
+        cout << "Server: ";
+        thread input_thread([&]() {
+            char input_buffer[buf_size];
+            cin.getline(input_buffer, buf_size);
+
+            // SENDING DATA TO CLIENT
+            send(client, input_buffer, strlen(input_buffer), 0);
+
+            if (strcmp(input_buffer, "#") == 0) 
+            {
+                cout << "Connection terminated by server." << endl;
+                close(client);
+                exit(0);
+            }
+        });
+
+        input_thread.join();
     }
 
-    // CLOSE CALL
+    // CLOSE CALL 
 
     close(client);
     close(server);

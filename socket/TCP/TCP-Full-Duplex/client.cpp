@@ -20,7 +20,7 @@ int main()
 
     struct sockaddr_in server_addr;
 
-    // ESTABLISHING SOCKET CONNECTION
+    // ESTABLISHING SOCKET CONNECTION 
 
     client = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -66,25 +66,24 @@ int main()
 
     while (true) {
         // SENDING DATA TO SERVER
-        cout << "Client : ";
+        cout << "Client: ";
         cin.getline(buffer, buf_size);
-        send(client, buffer, strlen(buffer), 0);
+        send(client, buffer, buf_size, 0);
         if (strcmp(buffer, "#") == 0) {
-            cout << "\nConnection terminated" << endl;
+            cout << "\nConnection terminated.\nGoodbye..." << endl;
             break;
         }
-    
+
         // RECEIVING DATA FROM SERVER
-        cout << "Server : ";
-        int bytesReceived = recv(client, buffer, buf_size - 1, 0);
+        cout << "Server: ";
+        bytesReceived = recv(client, buffer, buf_size - 1, 0);
         if (bytesReceived <= 0) {
-            cerr << "Error receiving message" << endl;
+            cerr << "Error receiving data from the server." << endl;
             close(client);
             exit(1);
         }
-    
-        buffer[bytesReceived] = '\0';
-        cout << buffer << endl;
+        buffer[bytesReceived] = '\0'; 
+        cout << buffer << endl;   
     }
 
     // CLOSE CALL 
